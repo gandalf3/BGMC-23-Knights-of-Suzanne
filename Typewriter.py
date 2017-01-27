@@ -1,6 +1,15 @@
 import bge
+import Sound
+
+
 
 class Typewriter(bge.types.KX_FontObject):
+    
+    sound_device = Sound.get_device()
+    sounds = {\
+        "keystroke": Sound.load_factory("click_2.wav", buffer=True).pitch(1.4).volume(.5)
+    }
+    
     def __init__(self, own):
         self.line = "" # message to be typed out
         self.speed = 1 #chars per tic
@@ -13,6 +22,8 @@ class Typewriter(bge.types.KX_FontObject):
         if self.caret_pos <= len(self.line):
             self.text = self.line[0:self.caret_pos]
             self.caret_pos += 1
+            
+            Sound.play_modulated(self.sounds["keystroke"])
         
 class Dialog(Typewriter):
     def __init__(self, own):
