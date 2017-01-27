@@ -1,5 +1,5 @@
 import bge
-from Typewriter import Dialog, Typewriter
+from Typewriter import Dialog
 from mathutils import Vector
 from SceneManage import getScene
 
@@ -9,7 +9,7 @@ class NPC(bge.types.KX_GameObject):
         self.speed = 1
         self.speedfac = .05
         self.direction = 1
-        self.textbox = False
+        self.textbox = None
         self.dialog = ""
         
     def move(self):
@@ -28,32 +28,41 @@ class NPC(bge.types.KX_GameObject):
         if self.speed <= .01:
             self.children["PlayerVisual"].stopAction()
 
-    def look(self):
+    def look(self, direction):
+        self.look_direction = direction
+    
+    def handle_look(self):
         self.alignAxisToVect((0,0,1), 2, 1)
-        self.alignAxisToVect((-self.direction,0,0), 1, .2)
+        self.alignAxisToVect(self.look_direction, 1, .2)
+        
+    def say(self, words, emphasis=False):
+        print(self.name, "says")
+        if self.textbox is None:
+            tscn = getScene("TextOverlay")
+            self.textbox = Dialog(tscn.addObject("GenericDialog", self))
+        self.textbox.target_pos = self.worldPosition
+        if emphasis:
+            self.textbox.localScale *= 2
+        self.textbox.write(words)
+        self.textbox.fade = 2
     
     def talk(self):
         if self.sensors["PlayerProximity"].status == bge.logic.KX_SENSOR_JUST_ACTIVATED:
-            print("PREPARE TO TALK")
-            if not self.textbox:
-                tscn = getScene("TextOverlay")
-                print(tscn)
-                if tscn:
-                    self.textbox = Dialog(tscn.addObject("GenericDialog"))
-            self.textbox.write(self.dialog)
-            self.textbox.target_pos = self.worldPosition
-            
+            self.say(self.dialog)
         if self.sensors["PlayerProximity"].status == bge.logic.KX_SENSOR_JUST_DEACTIVATED:
             if not self.textbox.invalid:
-                self.textbox.endObject()
+                self.textbox.fade = 0
             self.textbox = False
-            print("GET TALKED")
+    
+    def draw_attention(self):
+        self.playAction("DrawAttention", 1, 17)
             
     
     def main(self):
-        self.talk()
-        #self.move()
-        #self.look()
+        if not bge.logic.getCurrentScene().objects["Control"].get("running_cutscene", 0):
+            self.talk()
+            #self.move()
+            #self.look()
         
         
 def run(cont):

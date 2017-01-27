@@ -2,7 +2,6 @@ import bge
 import Sound
 
 
-
 class Typewriter(bge.types.KX_FontObject):
     
     sound_device = Sound.get_device()
@@ -14,6 +13,7 @@ class Typewriter(bge.types.KX_FontObject):
         self.line = "" # message to be typed out
         self.speed = 1 #chars per tic
         self.caret_pos = 0 # position of typing cursor thingy
+        self.resolution = 4
         
     def onEOL(self):
         pass
@@ -28,6 +28,8 @@ class Typewriter(bge.types.KX_FontObject):
 class Dialog(Typewriter):
     def __init__(self, own):
         Typewriter.__init__(self, own)
+        self.fade = False
+        self.init_time = bge.logic.getRealTime()
     
     def write(self, str):
         self.line = str
@@ -46,10 +48,19 @@ class Dialog(Typewriter):
         tpos.x -= 1
         self.worldPosition = self.worldPosition.lerp(tpos, .1)
         
+    def handle_fade(self):
+        now = bge.logic.getRealTime() - self.init_time
+        if self.fade <= now:
+            self.color[3] -= .01
+            if self.color[3] <= 0:
+                self.endObject()
+        
     def main(self):
         self.typewrite()
         self.align_to_camera()
         self.adjust_position()
+        if self.fade is not False:
+            self.handle_fade()
     
         
 def run_dialog(cont):
