@@ -92,8 +92,27 @@ def do():
     gasp.localScale *= 3
     gasp.write("*GASP*")
     gasp.fade = 2
-
     
+@castle_lawn.register_event(6)
+def do():
+    objs["Zane"].say("Oh no!")
+
+@castle_lawn.register_event(6.5)
+def do():
+    objs["Sue"].say("Who would do such a thing!?")
+    
+@castle_lawn.register_event(5.6)
+def do():
+    objs["Kewler"].say("WHAT!")
+
+@castle_lawn.register_event(6.3)
+def do():
+    objs["Frank"].say("Did anyone see who did it?")
+
+@castle_lawn.register_event(7.1)
+def do():
+    objs["Scales"].say("What are we going to do?")
+
 
 cutscenes = {\
 "castle_lawn_meeting": castle_lawn,

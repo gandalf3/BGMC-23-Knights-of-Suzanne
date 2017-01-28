@@ -37,9 +37,10 @@ class NPC(bge.types.KX_GameObject):
         
     def say(self, words, emphasis=False):
         print(self.name, "says")
-        if self.textbox is None:
+        if self.textbox is None or self.textbox.invalid:
             tscn = getScene("TextOverlay")
             self.textbox = Dialog(tscn.addObject("GenericDialog", self))
+            print("added new textbox")
         self.textbox.target_pos = self.worldPosition
         if emphasis:
             self.textbox.localScale *= 2
