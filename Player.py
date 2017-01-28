@@ -1,5 +1,6 @@
 import bge
 from mathutils import Vector
+import Sound
 
 
 class Player(bge.types.KX_GameObject):

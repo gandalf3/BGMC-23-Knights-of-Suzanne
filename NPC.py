@@ -52,7 +52,7 @@ class NPC(bge.types.KX_GameObject):
         if self.sensors["PlayerProximity"].status == bge.logic.KX_SENSOR_JUST_DEACTIVATED:
             if not self.textbox.invalid:
                 self.textbox.fade = 0
-            self.textbox = False
+            self.textbox = None
     
     def draw_attention(self):
         self.playAction("DrawAttention", 1, 17)
