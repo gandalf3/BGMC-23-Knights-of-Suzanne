@@ -11,6 +11,14 @@ def run_cutscene(cont):
     bge.logic.getCurrentScene().objects["Control"]['running_cutscene'] = own["cutscene"]
     
 
+def fade_out(cont):
+    own = cont.owner
+    
+    own.color[3] -= .01
+    if own.color[3] <= 0:
+        own.visible = False
+    
+
 def main(cont):
     own = cont.owner
     
