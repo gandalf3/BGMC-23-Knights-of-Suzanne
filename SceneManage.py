@@ -2,6 +2,7 @@ import bge
 from Cutscenes import *
 from utils import getScene, switchlevel
 import Accomplishments
+import aud
 
 cutscenes = {\
 "hi_frank": HiFrank,
