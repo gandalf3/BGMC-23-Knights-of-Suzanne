@@ -8,7 +8,7 @@ cutscenes = {\
 "castle_lawn_meeting": CastleLawn,
 }
 
-def switchlevel(cont):
+def cont_switchlevel(cont):
     own = cont.owner
     bge.logic.getCurrentScene().replace(own["toscene"])
     

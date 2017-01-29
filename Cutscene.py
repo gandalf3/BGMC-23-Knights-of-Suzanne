@@ -6,6 +6,7 @@ class CutsceneEvent():
         self.time = time
         self.func = func
         self.finished = False
+        self.pause = False
         
     def execute(self):
         self.func()
@@ -15,9 +16,12 @@ class Cutscene():
         self.events = []
         self.started = False
         
-    def register_event(self, time):
+    def register_event(self, time, pause=False):
         def get_event(func):
-            self.events.append(CutsceneEvent(time, func))
+            evt = CutsceneEvent(time, func)
+            if pause:
+                evt.pause = True
+            self.events.append(evt)
             return func
         return get_event
         
@@ -25,13 +29,28 @@ class Cutscene():
     def run(self):
         if not self.started:
             self.started = True
-            self.t_zero = bge.logic.getRealTime()
+            self.now = 0
+            self.paused = False
+            self.pause_after = None
             
-        now = bge.logic.getRealTime() - self.t_zero
-        
-        for evt in self.events:
-            if not evt.finished and evt.time <= now:
-                evt.execute()
-                evt.finished = True
-        
+        if self.paused:
+            if bge.logic.mouse.events[bge.events.LEFTMOUSE]:
+                self.paused = False
+        else:
+            self.now += 1
+            #print(self.now/60)
+            for id, evt in enumerate(self.events):
+                if not evt.finished and evt.time <= self.now/60:
+
+                    if self.pause_after is None or id == self.pause_after:
+                        print("evt", id, "at", self.now/60)
+                        evt.execute()
+                        evt.finished = True
+                    else:
+                        self.paused = True
+                        self.pause_after = None
+                    
+                    if evt.pause:
+                        self.pause_after = id
+            
     

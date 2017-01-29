@@ -1,8 +1,9 @@
 import bge
 from mathutils import Vector
 import Sound
-from utils import lerp
+from utils import lerp, Plane, get_mouse_on_plane
 from math import copysign
+import Particles
 
 class Player(bge.types.KX_GameObject):
     def __init__(self, own):
@@ -16,6 +17,16 @@ class Player(bge.types.KX_GameObject):
         self.target_pos = None
         self.look_direction = None
         self.action_stop = False
+        
+        self.abilities = ['attack']
+        self.attack1_cooldown = .2*60
+        self.attack1_coolness = self.attack1_cooldown
+        self.attack2_chargetime = 60
+        self.attack2_charge = 0
+        
+        self.to_mouse = None
+        
+        bge.render.showMouse(True)
         
     def move(self):
         model = self.children["PlayerVisual"]
@@ -81,6 +92,7 @@ class Player(bge.types.KX_GameObject):
         self.look_direction = direction
         
     def lookat(self, ob):
+        print("looking")
         self.look(ob.worldPosition.copy())
     
     def goto(self, spot):
@@ -95,10 +107,54 @@ class Player(bge.types.KX_GameObject):
         
             
     
+    def attack1(self):
+        model = self.children["PlayerVisual"]
+        sword = model.children["Sword"]
+        
+        if self.sensors["Mouse1"].positive:
+            pass
+        
+    def attack2(self):
+        model = self.children["PlayerVisual"]
+        sword = model.children["Sword"]
+        
+        if self.sensors["Mouse2"].positive:
+            if self.attack2_charge < self.attack2_chargetime:
+                self.attack2_charge += 1
+        else:
+            if self.attack2_charge > self.attack2_chargetime/25:
+                prim = Particles.spawn_particle("prim", sword)
+                if self.to_mouse:
+                    prim.emit_direction = self.to_mouse
+                power = ((self.attack2_charge/self.attack2_chargetime)**(1/3))
+                prim.emit_speed = power*3
+                prim.localScale.xyz = power*.5
+                self.attack2_charge = 0
+            #prim.emit_direction =
+            
+            
+    def handle_sword(self):
+        model = self.children["PlayerVisual"]
+        sword = model.children["Sword"]
+        
+        if self.to_mouse:
+            sword.alignAxisToVect(-self.to_mouse, 1, .2)
+            sword.alignAxisToVect(model.worldOrientation[0], 2, 1)
+    
     def main(self):
         self.move()
         self.handle_look()
         self.handle_lerp_action_to()
+        self.handle_sword()
+        if "attack" in self.abilities:
+            self.attack1()
+            self.attack2()
+            
+        xz = Plane(Vector((0, 0, 0)), Vector((0, -1, 0)))
+        mouse = get_mouse_on_plane(xz, self.sensors["Mouse"])
+        if mouse:
+            self.to_mouse = mouse - self.worldPosition
+            
         self.tic += 1
         
         
