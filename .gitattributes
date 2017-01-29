@@ -2,3 +2,5 @@ Knights_of_Suzanne.blend filter=lfs diff=lfs merge=lfs -text
 sounds filter=lfs diff=lfs merge=lfs -text
 sounds/click_2.wav filter=lfs diff=lfs merge=lfs -text
 sounds/stream.wav filter=lfs diff=lfs merge=lfs -text
+textures/blender_logo_shiny2.png filter=lfs diff=lfs merge=lfs -text
+textures/blender_logo_old.png filter=lfs diff=lfs merge=lfs -text

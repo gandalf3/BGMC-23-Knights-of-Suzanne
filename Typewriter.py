@@ -33,6 +33,7 @@ class Dialog(Typewriter):
     
     def write(self, str):
         self.line = str
+        self.init_time = bge.logic.getRealTime()
         self.caret_pos = 0
         
     def align_to_camera(self):

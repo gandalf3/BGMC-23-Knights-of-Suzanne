@@ -8,3 +8,11 @@ def getScene(name):
         return scn
     else:
         return None
+    
+    
+def lerp(value1, value2, fac):
+    """
+    linear interpolation
+    """
+    
+    return value1 * (1-fac) + value2 * fac
