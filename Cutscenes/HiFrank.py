@@ -39,7 +39,15 @@ def do():
 @script.register_event(3+4.5)
 def do():
     objs["Frank"].goto(objs["Frankholder"].worldPosition.copy())
-    
+
+@script.register_event(6)
+def do():
+    objs["Frank"].lookat(objs["Sir_Sergey"])
+
 @script.register_event(3+6)
 def do():
     objs["Player"].player_control = True
+    
+@script.register_event(3+6)
+def do():
+    bge.logic.globalDict["accomplishments"]["follow_frank"] = True

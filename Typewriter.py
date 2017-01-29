@@ -35,6 +35,9 @@ class Dialog(Typewriter):
         self.line = str
         self.init_time = bge.logic.getRealTime()
         self.caret_pos = 0
+        if self.fade is not False:
+            self.fade = False
+            self.color[3] = 1
         
     def align_to_camera(self):
         cam = bge.logic.getCurrentScene().active_camera
@@ -72,6 +75,8 @@ def run_dialog(cont):
         #own = Dialog(own)
     
     own.main()
+    if own.sensors["level_shutdown"].positive:
+        own.endObject()
         
         
 def increment(object):

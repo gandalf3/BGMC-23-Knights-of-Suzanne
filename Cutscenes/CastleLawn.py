@@ -1,5 +1,5 @@
 import bge
-from utils import getScene
+from utils import getScene, switchlevel
 from Typewriter import Dialog
 from Cutscene import Cutscene
 
@@ -158,8 +158,12 @@ def do():
 
 @script.register_event(15, pause=True)
 def do():
-    objs["Frank"].say("I mean, it's hard to believe.. Lets look for ourselves", persist=True)
+    objs["Frank"].say("I mean, it's hard to believe.. Lets go see", persist=True)
+    
+@script.register_event(15.2)
+def do():
+    objs["Frank"].goto(objs["Frankholder.001"].worldPosition.copy())
     
 @script.register_event(16)
 def do():
-    print("switch scene")
+    switchlevel("Castle")

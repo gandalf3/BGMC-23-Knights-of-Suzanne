@@ -1,16 +1,24 @@
 import bge
 from Cutscenes import *
-from utils import getScene
+from utils import getScene, switchlevel
 import Accomplishments
 
 cutscenes = {\
 "hi_frank": HiFrank,
 "castle_lawn_meeting": CastleLawn,
+"castle_sword": CastleSword,
 }
 
 def cont_switchlevel(cont):
     own = cont.owner
-    bge.logic.getCurrentScene().replace(own["toscene"])
+
+    if "tospawn" in own:
+        bge.logic.globalDict["next_spawn"] = own["tospawn"]
+    if "requirement" in own:
+        if bge.logic.globalDict.get(own["requirement"], True):
+            switchlevel(own["toscene"])
+    else:
+        switchlevel(own["toscene"])
     
 def run_cutscene(name):
     bge.logic.getCurrentScene().objects["Control"]['running_cutscene'] = name
@@ -19,13 +27,27 @@ def cont_cutscene(cont):
     own = cont.owner
     run_cutscene(own["cutscene"])
 
-def fade_out(cont):
+def blackfade(cont):
     own = cont.owner
-    
-    own.color[3] -= .01
-    if own.color[3] <= 0:
-        own.visible = False
-    
+    if own.get("in"):
+        if own.color[3] >= 0:
+            own.color[3] -= .01
+            if own.color[3] <= 0:
+                own.visible = False
+    else:
+        own.visible = True
+        own.color[3] += .01
+        if own.color[3] >= 1:
+            own["black"] = True
+            switchlevel(own.get("next_lvl"))
+            stophandles()
+            
+def stophandles():
+    scn = bge.logic.getCurrentScene()
+    ctrl = scn.objects["Control"]
+    for h in ctrl.get("sounds", []):
+        if h.status == aud.AUD_STATUS_PLAYING:
+            h.stop()
 
 def main(cont):
     own = cont.owner

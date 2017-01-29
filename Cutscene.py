@@ -40,6 +40,12 @@ class Cutscene():
             self.now += 1
             #print(self.now/60)
             for id, evt in enumerate(self.events):
+                
+                #fast forward
+                if not evt.finished:
+                    evt.execute()
+                    evt.finished = True
+                
                 if not evt.finished and evt.time <= self.now/60:
 
                     if self.pause_after is None or id == self.pause_after:

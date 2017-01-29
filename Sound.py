@@ -13,8 +13,7 @@ def get_device():
 def play_modulated(factory):
         device = get_device()
         # Play the sound, using the sound_device and factory created earlier
-        handle = device.play(factory)
-        handle.relative = False
+        handle = play(factory)
         handle.distance_maximum = 100
         handle.distance_reference = 2
         # Pick a random offset between -.3 and +.3 to be applied to the pitch later
@@ -43,9 +42,15 @@ def load_factory(filename, buffer=False):
     
 def play(factory):
     device = get_device()
+    
     # Play the sound, using the sound_device and factory created earlier
     handle = device.play(factory)
     handle.relative = False
+    
+    ctrl = bge.logic.getCurrentScene().objects["Control"]
+    if not ctrl.get("sounds", 0):
+        ctrl["sounds"] = []
+    ctrl["sounds"].append(handle)
     return handle
     
 def cont_play(cont):

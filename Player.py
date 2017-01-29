@@ -1,7 +1,7 @@
 import bge
 from mathutils import Vector
 import Sound
-from utils import lerp, Plane, get_mouse_on_plane
+from utils import lerp, Plane, get_mouse_on_plane, clamp
 from math import copysign
 import Particles
 
@@ -10,12 +10,16 @@ class Player(bge.types.KX_GameObject):
         self.player_control = True
         self.inertia = .1
         self.jump_force = 3
+        self.jump_n = 0
+        self.jump_cooldown = .4*60
+        self.jump_coolness = self.jump_cooldown
         self.speed = 1
         self.speedfac = .05
         self.direction = 1
         self.tic = 0
         self.target_pos = None
         self.look_direction = None
+        self.look_target = None
         self.action_stop = False
         
         self.abilities = ['attack']
@@ -27,6 +31,10 @@ class Player(bge.types.KX_GameObject):
         self.to_mouse = None
         
         bge.render.showMouse(True)
+        self.xlock = False
+        
+        if not bge.logic.globalDict["accomplishments"]["sword"]:
+            self.children["PlayerVisual"].children["Sword"].visible = False
         
     def move(self):
         model = self.children["PlayerVisual"]
@@ -38,16 +46,28 @@ class Player(bge.types.KX_GameObject):
             if self.sensors["Right"].positive:
                 self.speed = 1
                 self.direction = 1
-            if self.sensors["Jump"].positive and self.sensors["Collision"].positive:
-                self.setLinearVelocity((0,0,self.jump_force))
+            if self.sensors["Jump"].positive:
+                self.jump()
+            if self.sensors["Collision"].positive:
+                if self.jump_coolness <= 0:
+                    self.jump_n = 0
+                hit_o = self.sensors["Collision"].hitObject
+                if hit_o:
+                    obj, point, normal = self.rayCast(hit_o, None, 1, "jumpable")
+                    if obj and obj == hit_o:
+                        # is jump surface vertical?
+                        if abs(normal.dot((0,0,1))) < .1:
+                            self.xlock = self.worldPosition.x
+                            self.xlock_normal = normal
                 
-                model.stopAction(0)
-                model.stopAction(1)
-                model.playAction("PlayerJump", 1, 30, layer=1, speed=2)
-                
-            self.worldPosition.x += self.speed*self.direction*self.speedfac
+            self.worldLinearVelocity.x = clamp(self.worldLinearVelocity.x + self.speed*self.direction*.5, -3, 3)
             self.look(Vector((self.direction, 0, 0)))
             self.speed *= self.inertia
+            #self.worldLinearVelocity.x *= .002
+            
+            if self.xlock:
+                self.worldPosition.x = self.xlock
+                self.worldLinearVelocity.z *= .9
         
             
         
@@ -62,11 +82,40 @@ class Player(bge.types.KX_GameObject):
             
         else:
             if self.target_pos is not None:
-                self.direction = self.target_pos - self.worldPosition.copy()
-                self.worldPosition.x += (copysign(min(self.speed*self.speedfac*5, abs(self.direction.x)), self.direction.x))
+                self.direction = (self.target_pos - self.worldPosition.copy()).x
+                self.worldPosition.x += (copysign(min(self.speed*self.speedfac*7, abs(self.direction)), self.direction))
             self.lerp_action_to(7)
             
             
+            
+    def jump(self):
+        model = self.children["PlayerVisual"]
+        print(self.jump_n, self.jump_coolness)
+        
+        if self.jump_n < 2 and self.jump_coolness <= self.jump_cooldown*.3:
+            self.jump_coolness = self.jump_cooldown
+
+            if self.sensors["Collision"].positive:
+                self.jump_n += 1
+            else:
+                self.jump_n += 2
+                
+            jump_vector = Vector((0,0,self.jump_force*(1 if self.jump_n <= 1 else 1.5)))
+        
+            # walljump
+            if self.xlock:
+                self.xlock = False
+                jump_vector += self.xlock_normal*4
+                self.jump_n += 2
+
+            print(jump_vector)
+            self.worldLinearVelocity += jump_vector
+                
+        
+            model.stopAction(0)
+            model.stopAction(1)
+            model.playAction("PlayerJump", 1, 30, layer=1, speed=2)
+        
             
     def lerp_action_to(self, frame):
         if self.action_stop is False:
@@ -82,14 +131,19 @@ class Player(bge.types.KX_GameObject):
     
     def handle_look(self):
         self.alignAxisToVect((0,0,1), 2, 1)
+#        if self.look_target is not None:
+#            print("targeting")
+#            vect = self.worldPosition.copy() - self.look_target
+#            self.alignAxisToVect(vect, 1, .4)
         if self.look_direction is not None:
-            self.alignAxisToVect((-self.look_direction.x,0,0), 1, .4)
+            self.alignAxisToVect(-self.look_direction, 1, 1)
         else:
             self.alignAxisToVect((0,-1,0), 1, .4)
     
     def look(self, direction):
-        self.direction = copysign(1, direction.x)
-        self.look_direction = direction
+        d = Vector(direction)
+        self.direction = copysign(1, d.x)
+        self.look_direction = d.copy()
         
     def lookat(self, ob):
         print("looking")
@@ -156,6 +210,9 @@ class Player(bge.types.KX_GameObject):
             self.to_mouse = mouse - self.worldPosition
             
         self.tic += 1
+        if self.jump_coolness >= 0:
+            self.jump_coolness -= 1
+        
         
         
 def run(cont):

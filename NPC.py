@@ -9,11 +9,11 @@ class NPC(bge.types.KX_GameObject):
         self.inertia = .1
         self.speed = 1
         self.speedfac = .05
-        self.direction = 1
+        self.direction = (0,-1,0)
         self.textbox = None
         self.dialog = ""
         self.target_pos = None
-        self.look_target = None
+        self.look_target = False
         self.look_direction = None
         
     def goto(self, spot):
@@ -34,12 +34,12 @@ class NPC(bge.types.KX_GameObject):
         
 #        if not self.isPlayingAction():
 #            self.playAction("PlayerWalkcycle", 1, 30, play_mode=bge.logic.KX_ACTION_MODE_LOOP, speed=2)
-#        if self.speed <= .01:
-#            self.stopAction()    
+#            self.stopAction()
+        if self.getLinearVelocity().xy.length >= .1:
             self.look(self.direction)
 
     def lookat(self, obj):
-        self.look(-obj.worldPosition.copy())
+        self.look(obj.worldPosition.copy() - self.worldPosition.copy())
 
     def look(self, direction):
         self.look_direction = Vector(direction)
@@ -48,9 +48,7 @@ class NPC(bge.types.KX_GameObject):
         if self.look_direction is not None:
             self.alignAxisToVect((0,0,1), 2, 1)
             self.alignAxisToVect(-self.look_direction, 1, .2)
-        elif self.look_target is not None:
-            self.alignAxisToVect((0,0,1), 2, 1)
-            self.alignAxisToVect(self.worldPosition - self.look_target, 1, .2)
+            
         
     def say(self, words, emphasis=False, persist=False):
         if self.textbox is not None:
