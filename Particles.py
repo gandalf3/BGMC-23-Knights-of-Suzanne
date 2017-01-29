@@ -14,10 +14,11 @@ class Particle(bge.types.KX_GameObject):
         self.lifetime = .7*60
         self.elapsed_tics = 0
         self.first_tic = True
+        self.scale = 1
         
     def control_size(self):
         s = (self.elapsed_tics/self.lifetime)
-        self.localScale.xyz = -(((s-.5)*2)**2)+1
+        self.localScale.xyz = (-(((s-.5)*2)**2)+1) * self.scale
         
     def main(self):
         if self.elapsed_tics >= 2:
@@ -37,7 +38,6 @@ class SteamParticle(Particle):
     def main(self):
         Particle.main(self)
         if self.first_tic:
-            print(self.emit_direction, self.emit_speed)
             self.setLinearVelocity(self.emit_direction.lerp(noise.random_unit_vector(), self.focus)*self.emit_speed)
             
         self.control_size()

@@ -9,7 +9,7 @@ class Player(bge.types.KX_GameObject):
     def __init__(self, own):
         self.player_control = True
         self.inertia = .1
-        self.jump_force = 3
+        self.jump_force = 5
         self.jump_n = 0
         self.jump_cooldown = .4*60
         self.jump_coolness = self.jump_cooldown
@@ -33,8 +33,8 @@ class Player(bge.types.KX_GameObject):
         bge.render.showMouse(True)
         self.xlock = False
         
-        if not bge.logic.globalDict["accomplishments"]["sword"]:
-            self.children["PlayerVisual"].children["Sword"].visible = False
+#        if not bge.logic.globalDict["accomplishments"]["sword"]:
+#            self.children["PlayerVisual"].children["Sword"].visible = False
         
     def move(self):
         model = self.children["PlayerVisual"]
@@ -65,9 +65,9 @@ class Player(bge.types.KX_GameObject):
             self.speed *= self.inertia
             #self.worldLinearVelocity.x *= .002
             
-            if self.xlock:
-                self.worldPosition.x = self.xlock
-                self.worldLinearVelocity.z *= .9
+#            if self.xlock:
+#                self.worldPosition.x = self.xlock
+#                self.worldLinearVelocity.z *= .9
         
             
         
@@ -90,31 +90,33 @@ class Player(bge.types.KX_GameObject):
             
     def jump(self):
         model = self.children["PlayerVisual"]
-        print(self.jump_n, self.jump_coolness)
+        #print(self.jump_n, self.jump_coolness)
         
-        if self.jump_n < 2 and self.jump_coolness <= self.jump_cooldown*.3:
-            self.jump_coolness = self.jump_cooldown
-
+        if self.jump_coolness <= 0:
             if self.sensors["Collision"].positive:
-                self.jump_n += 1
-            else:
-                self.jump_n += 2
-                
-            jump_vector = Vector((0,0,self.jump_force*(1 if self.jump_n <= 1 else 1.5)))
-        
-            # walljump
-            if self.xlock:
-                self.xlock = False
-                jump_vector += self.xlock_normal*4
-                self.jump_n += 2
+                jump_vector = Vector((0,0,self.jump_force))
+                self.jump_coolness = self.jump_cooldown
+#        if self.jump_n < 2 and self.jump_coolness <= self.jump_cooldown*.3:
+#            if self.sensors["Collision"].positive:
+#                self.jump_n += 1
+#            else:
+#                self.jump_n += 2
+#                
+#            jump_vector = Vector((0,0,self.jump_force*(1 if self.jump_n <= 1 else 1.5)))
+#        
+#            # walljump
+#            if self.xlock:
+#                self.xlock = False
+#                jump_vector += self.xlock_normal*4
+#                self.jump_n += 2
 
-            print(jump_vector)
-            self.worldLinearVelocity += jump_vector
+#            print(jump_vector)
+                self.worldLinearVelocity += jump_vector
                 
         
-            model.stopAction(0)
-            model.stopAction(1)
-            model.playAction("PlayerJump", 1, 30, layer=1, speed=2)
+                model.stopAction(0)
+                model.stopAction(1)
+                model.playAction("PlayerJump", 1, 30, layer=1, speed=2)
         
             
     def lerp_action_to(self, frame):
@@ -194,6 +196,10 @@ class Player(bge.types.KX_GameObject):
         if self.to_mouse:
             sword.alignAxisToVect(-self.to_mouse, 1, .2)
             sword.alignAxisToVect(model.worldOrientation[0], 2, 1)
+            
+            
+    def die(self):
+        self.worldPosition = (0,0,0)
     
     def main(self):
         self.move()
@@ -209,10 +215,17 @@ class Player(bge.types.KX_GameObject):
         if mouse:
             self.to_mouse = mouse - self.worldPosition
             
-        self.tic += 1
         if self.jump_coolness >= 0:
             self.jump_coolness -= 1
+            
+        if self.sensors["Steam"].status == bge.logic.KX_SENSOR_ACTIVE:
+            self.damage_tic += 1
+            if self.damage_tic >= .5*60:
+                self.die()
+        else:
+            self.damage_tic = 0
         
+        self.tic += 1
         
         
 def run(cont):

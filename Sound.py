@@ -10,14 +10,13 @@ def get_device():
     
     return ctrl["device"]
 
-def play_modulated(factory):
+def play_modulated(factory, min=.9, max=1.1):
         device = get_device()
         # Play the sound, using the sound_device and factory created earlier
         handle = play(factory)
-        handle.distance_maximum = 100
-        handle.distance_reference = 2
         # Pick a random offset between -.3 and +.3 to be applied to the pitch later
-        handle.pitch = random.randrange(90, 110)*.01
+        handle.pitch = random.randrange(min*100, max*100)*.01
+        return handle
         
 def update_handle(handle, ob):
     # Tell aud handle the most recent location/orientation/velocity of object
@@ -46,6 +45,8 @@ def play(factory):
     # Play the sound, using the sound_device and factory created earlier
     handle = device.play(factory)
     handle.relative = False
+    handle.distance_maximum = 20
+    handle.distance_reference = 5
     
     ctrl = bge.logic.getCurrentScene().objects["Control"]
     if not ctrl.get("sounds", 0):

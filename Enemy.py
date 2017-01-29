@@ -3,7 +3,7 @@ import Sound
 import Particles
 import utils
 from mathutils import Vector
-#import
+import random
 
 class Enemy(bge.types.KX_GameObject):
     
@@ -22,6 +22,7 @@ class Enemy(bge.types.KX_GameObject):
         self.boil_sound = Sound.play(self.sounds["boil"])
         self.boil_sound.volume = 0.3
         self.whistle = None
+        self.tic = random.randint(0, 3*60)
         
         
     def behavior(self):
@@ -29,7 +30,8 @@ class Enemy(bge.types.KX_GameObject):
             self.attack()
         
     def release_steam(self):
-        Particles.spawn_particle("steam", self.children["particle_reference"])
+        if not self.attacking:
+            Particles.spawn_particle("steam", self.children["particle_reference"])
     
     def attack(self):
         if not self.attacking and self.cooldown <= 0:
@@ -41,17 +43,23 @@ class Enemy(bge.types.KX_GameObject):
         
         self.attack_timer += 1
         stage_1 = 2*60
+        vect_to = scn.objects["Player"].worldPosition.copy() - self.worldPosition.copy()
+        if vect_to.length >= 2:
+            vect_to = (scn.objects["Player"].worldPosition.copy() - self.worldPosition.copy())  - Vector((0,0,1))
+        
         if self.attack_timer < stage_1:
             self.boil_sound.volume = utils.clamp(self.attack_timer/(stage_1))
-            self.alignAxisToVect(scn.objects["Player"].worldPosition.copy() - (self.worldPosition - Vector((0,0,1))), 2, .1)
+            self.alignAxisToVect(vect_to, 2, .1)
         if self.attack_timer == stage_1:
-            self.whistle = Sound.play(self.sounds["whistle"])
+            self.whistle = Sound.play_modulated(self.sounds["whistle"], 1, 1.05)
         if self.attack_timer >= stage_1:
-            p = Particles.spawn_particle("steam", self.children["particle_reference"])
-            p.emit_direction = -self.worldOrientation[2]
-            p.emit_speed = 5
-            p.focus = .1
-            p.lifetime = 1*60
+            if self.attack_timer%3 == 0:
+                p = Particles.spawn_particle("steam", self.children["particle_reference"])
+                p.emit_direction = vect_to.normalized()
+                p.emit_speed = 5
+                p.focus = .2
+                p.lifetime = 1*60
+                p.scale = 5
             self.boil_sound.volume = utils.clamp(self.attack_timer/(stage_1))
 
             if not self.whistle.status:
@@ -59,13 +67,20 @@ class Enemy(bge.types.KX_GameObject):
                 self.attack_timer = 0
                 self.cooldown = self.cooldown_length
             
-        
+    def die(self):
+        if self.whistle:
+            self.whistle.stop()
+        if self.boil_sound:
+            self.boil_sound.stop()
+        self.endObject()
         
     
     def main(self):
         self.behavior()
         if self.attacking == True:
             self.handle_attack()
+        else:
+            self.alignAxisToVect((0,0,1), 2, .1)
         if self.tic%(3*60) >= (2.7*60):
             self.release_steam()
             
@@ -74,6 +89,12 @@ class Enemy(bge.types.KX_GameObject):
             Sound.update_handle(self.whistle, self)
         self.tic += 1
         self.cooldown -= 1
+        
+        if self.sensors["damage"].status == bge.logic.KX_SENSOR_ACTIVE:
+            self.die()
+                
+        
+            
         
         
         
