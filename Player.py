@@ -33,8 +33,8 @@ class Player(bge.types.KX_GameObject):
         bge.render.showMouse(True)
         self.xlock = False
         
-#        if not bge.logic.globalDict["accomplishments"]["sword"]:
-#            self.children["PlayerVisual"].children["Sword"].visible = False
+        if not bge.logic.globalDict["accomplishments"]["sword"]:
+            self.children["PlayerVisual"].children["Sword"].visible = False
         
     def move(self):
         model = self.children["PlayerVisual"]
@@ -220,7 +220,7 @@ class Player(bge.types.KX_GameObject):
             
         if self.sensors["Steam"].status == bge.logic.KX_SENSOR_ACTIVE:
             self.damage_tic += 1
-            if self.damage_tic >= .5*60:
+            if self.damage_tic >= 1*60:
                 self.die()
         else:
             self.damage_tic = 0

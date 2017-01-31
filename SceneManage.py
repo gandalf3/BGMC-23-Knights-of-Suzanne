@@ -8,6 +8,7 @@ cutscenes = {\
 "hi_frank": HiFrank,
 "castle_lawn_meeting": CastleLawn,
 "castle_sword": CastleSword,
+"end": End,
 }
 
 def cont_switchlevel(cont):
@@ -16,7 +17,7 @@ def cont_switchlevel(cont):
     if "tospawn" in own:
         bge.logic.globalDict["next_spawn"] = own["tospawn"]
     if "requirement" in own:
-        if bge.logic.globalDict.get(own["requirement"], True):
+        if bge.logic.globalDict['accomplishments'].get(own["requirement"], False):
             switchlevel(own["toscene"])
     else:
         switchlevel(own["toscene"])
@@ -40,8 +41,8 @@ def blackfade(cont):
         own.color[3] += .01
         if own.color[3] >= 1:
             own["black"] = True
-            switchlevel(own.get("next_lvl"))
             stophandles()
+            switchlevel(own.get("next_lvl"))
             
 def stophandles():
     scn = bge.logic.getCurrentScene()

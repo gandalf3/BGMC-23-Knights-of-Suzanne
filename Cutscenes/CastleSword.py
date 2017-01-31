@@ -8,6 +8,10 @@ script = Cutscene()
 @script.register_event(0)
 def do():
     objs("Player").player_control = False
+    
+@script.register_event(1)
+def do():
+    objs("Ton_of_Ideas").look((0, 1, 0))
 
 @script.register_event(1)
 def do():

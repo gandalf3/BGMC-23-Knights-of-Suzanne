@@ -17,7 +17,7 @@ class NPC(bge.types.KX_GameObject):
         self.look_direction = None
         
     def goto(self, spot):
-        self.look_target = spot.copy()
+        #self.look(self.worldPosition - spot.copy())
         if spot.x - self.worldPosition.x < 0:
             spot.x += .5
         else:
@@ -35,8 +35,6 @@ class NPC(bge.types.KX_GameObject):
 #        if not self.isPlayingAction():
 #            self.playAction("PlayerWalkcycle", 1, 30, play_mode=bge.logic.KX_ACTION_MODE_LOOP, speed=2)
 #            self.stopAction()
-        if self.getLinearVelocity().xy.length >= .1:
-            self.look(self.direction)
 
     def lookat(self, obj):
         self.look(obj.worldPosition.copy() - self.worldPosition.copy())
@@ -45,9 +43,12 @@ class NPC(bge.types.KX_GameObject):
         self.look_direction = Vector(direction)
     
     def handle_look(self):
-        if self.look_direction is not None:
-            self.alignAxisToVect((0,0,1), 2, 1)
-            self.alignAxisToVect(-self.look_direction, 1, .2)
+        if self.getLinearVelocity().xy.length >= .1:
+            self.alignAxisToVect(-Vector(self.direction), 1, 1)
+        elif self.look_direction is not None:
+            self.alignAxisToVect(-self.look_direction, 1, 1)
+            
+        self.alignAxisToVect((0,0,1), 2, 1)
             
         
     def say(self, words, emphasis=False, persist=False):

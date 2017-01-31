@@ -19,6 +19,11 @@ def do():
 
 @script.register_event(0)
 def do():
+    for o in [objs(n) for n in villagers]:
+        o.lookat(objs("Sir_Sergey"))
+    
+@script.register_event(0)
+def do():
     objs("Player").goto(objs("Playerholder").worldPosition.copy())
 
 @script.register_event(0)
@@ -147,7 +152,7 @@ def do():
 
 @script.register_event(14, pause=True)
 def do():
-    objs("Frank").say("The 2.8 missing.. After the time the Council put into it..", persist=True)
+    objs("Frank").say("The 2.8 missing.. After the effort the Council put into it..", persist=True)
     
 @script.register_event(14.3)
 def do():
@@ -163,6 +168,9 @@ def do():
     
 @script.register_event(15.2)
 def do():
+    objs("Frank").textbox.end()
+    objs("Sir_Blendsalot").textbox.end()
+    objs("Sir_Sergey").textbox.end()
     objs("Frank").goto(objs("Frankholder.001").worldPosition.copy())
     
 @script.register_event(16)

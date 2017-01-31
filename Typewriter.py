@@ -58,6 +58,12 @@ class Dialog(Typewriter):
             self.color[3] -= .01
             if self.color[3] <= 0:
                 self.endObject()
+                
+    def end(self):
+        print("ending typewritier")
+        self.fade = 0
+        self.color[3] = 0
+        self.endObject()
         
     def main(self):
         self.typewrite()
@@ -76,7 +82,7 @@ def run_dialog(cont):
     
     own.main()
     if own.sensors["level_shutdown"].positive:
-        own.endObject()
+        own.end()
         
         
 def increment(object):

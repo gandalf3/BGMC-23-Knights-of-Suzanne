@@ -12,10 +12,8 @@ def get_device():
 
 def play_modulated(factory, min=.9, max=1.1):
         device = get_device()
-        # Play the sound, using the sound_device and factory created earlier
         handle = play(factory)
-        # Pick a random offset between -.3 and +.3 to be applied to the pitch later
-        handle.pitch = random.randrange(min*100, max*100)*.01
+        handle.pitch = random.randrange(int(min*100), int(max*100))*.01
         return handle
         
 def update_handle(handle, ob):
